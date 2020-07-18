@@ -2,14 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 //Класс генерации поля
 public class Grid : MonoBehaviour
 {
     public Hex hexPrefab;
     public GameObject[] unitPrefab; //массив юнитов
-    //public GameObject[] unitPrefabClone; //копия массива
-    
+
     private Vector3 spawnPlace; //место спавна юнита
     
     public GameObject selectedUnit; //активный юнит
@@ -18,9 +18,16 @@ public class Grid : MonoBehaviour
     private int cols = 17; //количество столбцов
 
     int index = 0; //индекс юнита в массиве юнитов
-    Hex[,] graph; //граф гексов
+    Hex[,] graph; //массив гексов
 
     Hex hexGo;
+
+    private UnityAction<Hex> hexListener;
+
+    private void Awake()
+    {
+        hexListener = new UnityAction<Hex>(OnHexClick);
+    }
 
     // Use this for initialization
     void Start()
@@ -28,15 +35,9 @@ public class Grid : MonoBehaviour
         GenerateGrid();
         FindNeighbours();
         
-        foreach(Hex i in graph)
-        {
-            Debug.Log(i.transform.localPosition);
-            i.isWalkable = false;
-        }
-        //selectedUnit = unitPrefabClone[index];
         selectedUnit = unitPrefab[index];
     }
-
+    
     //расчёт позиции гекса
     public Vector2 Position(int i, int j)
     {
@@ -67,14 +68,13 @@ public class Grid : MonoBehaviour
             for (int j = 0; j < rows; j++)
             {
                 hexGo = Instantiate(hexPrefab, Position(i, j), Quaternion.identity, transform);
-                hexGo.onHexClick += OnHexClick;
+                //hexGo.onHexClick += OnHexClick;
                 hexGo.SetCoord(i, j);
 
                 graph[i, j] = hexGo;
 
                 hexGo.GetComponentInChildren<TextMesh>().text = string.Format("{0},{1}", i, j);
 
-                //SpawnUnits(i, j, k);
                 if (i == 0 && j % 2 == 0)
                 {
                     if (k < unitPrefab.Length)
@@ -86,15 +86,13 @@ public class Grid : MonoBehaviour
                             spawnPlace = new Vector3(unitPrefab[k].GetComponent<UnitCharacteristic>().unit.spawnLocation.x,
                                 unitPrefab[k].GetComponent<UnitCharacteristic>().unit.spawnLocation.y + unitPrefab[k].transform.localScale.y / 3, 0);
 
-                            //unitPrefabClone[k] = Instantiate(unitPrefab[k], spawnTarget, Quaternion.identity) as GameObject;
                             unitPrefab[k] = Instantiate(unitPrefab[k], spawnPlace, Quaternion.identity) as GameObject;
 
-                            //unitPrefabClone[k].GetComponent<UnitCharacteristic>().tileX = i;
-                            //unitPrefabClone[k].GetComponent<UnitCharacteristic>().tileY = j;
                             unitPrefab[k].GetComponent<UnitCharacteristic>().tileX = i;
                             unitPrefab[k].GetComponent<UnitCharacteristic>().tileY = j;
 
-                            
+                            graph[i, j].isWalkable = false;
+                            graph[i, j].GetComponent<SpriteRenderer>().color = Color.black;
                         }
                         k++;
                     }
@@ -105,44 +103,21 @@ public class Grid : MonoBehaviour
         BubbleSort();
     }
 
-    //определяем место спавна и спавним юнитов
-    public void SpawnUnits(int i, int j, int k)
-    {
-        
 
-        if (i == 0 && j % 2 == 0)
-        {
-            if (k < unitPrefab.Length)
-            {
-                if (unitPrefab[k] != null)
-                {
-                    unitPrefab[k].GetComponent<UnitCharacteristic>().unit.spawnLocation = Position(i, j);
-
-
-                    spawnPlace = new Vector3(unitPrefab[k].GetComponent<UnitCharacteristic>().unit.spawnLocation.x,
-                        unitPrefab[k].GetComponent<UnitCharacteristic>().unit.spawnLocation.y + unitPrefab[k].transform.localScale.y / 3, 0);
-                    //unitPrefabClone[k] = Instantiate(unitPrefab[k], spawnTarget, Quaternion.identity) as GameObject;
-                    unitPrefab[k] = Instantiate(unitPrefab[k], spawnPlace, Quaternion.identity) as GameObject;
-
-                    //unitPrefabClone[k].GetComponent<UnitCharacteristic>().tileX = i;
-                    //unitPrefabClone[k].GetComponent<UnitCharacteristic>().tileY = j;
-                    unitPrefab[k].GetComponent<UnitCharacteristic>().tileX = i;
-                    unitPrefab[k].GetComponent<UnitCharacteristic>().tileY = j;
-                }
-                k++;
-            }
-        }
-        //else if (j == rows - 1 && j % 2 != 0) {}
-    }
-
-    public float CostToEnterTile(int sourceX, int sourceY, int targetX, int targetY)
+    public float CostToEnterTile(Hex u, Hex v)
     {
         float cost = 1;
-
-        if (sourceX != targetX && sourceY != targetY)
+        
+        if (u.q != v.q && u.r != v.r)
         {
-            // фикс излишней диагональности (?)
-            cost += 0.001f;
+            cost += 0.001f; // фикс излишней диагональности (?)
+        }
+
+        //повышаем стоимость занятой клетки чтобы обходить её
+        if (!v.isWalkable)
+        {
+            cost = cost + 10;
+            return cost;
         }
 
         return cost;
@@ -202,17 +177,32 @@ public class Grid : MonoBehaviour
     {
         GeneratePathTo(hex.q, hex.r);
 
+        graph[selectedUnit.GetComponent<UnitCharacteristic>().tileX, 
+            selectedUnit.GetComponent<UnitCharacteristic>().tileY].isWalkable = true;
+        graph[selectedUnit.GetComponent<UnitCharacteristic>().tileX,
+            selectedUnit.GetComponent<UnitCharacteristic>().tileY].GetComponent<SpriteRenderer>().color = Color.white;
+
         selectedUnit.GetComponent<UnitCharacteristic>().tileX = hex.q;
         selectedUnit.GetComponent<UnitCharacteristic>().tileY = hex.r;
+
+        hex.isWalkable = false;
+        hex.GetComponent<SpriteRenderer>().color = Color.black;
     }
 
+    //дийкстра
     public void GeneratePathTo(int x, int y)
     {
         // чистим старый путь
         selectedUnit.GetComponent<UnitCharacteristic>().currentPath = null;
 
-        Dictionary<Hex, float> dist = new Dictionary<Hex, float>();
-        Dictionary<Hex, Hex> prev = new Dictionary<Hex, Hex>();
+        if (!graph[x, y].isWalkable)
+        {
+            Debug.Log("стопэ");
+            return;
+        }
+
+        Dictionary<Hex, float> dist = new Dictionary<Hex, float>(); //дистанция от сёрса
+        Dictionary<Hex, Hex> prev = new Dictionary<Hex, Hex>();     //предыдущий в оптимальном пути
 
         // непосещённые ноды
         List<Hex> unvisited = new List<Hex>();
@@ -236,9 +226,8 @@ public class Grid : MonoBehaviour
         }
 
         while (unvisited.Count > 0)
-        {
-            // u - непосещённый нод с минимальной дистанцей 
-            Hex u = null;
+        { 
+            Hex u = null; // u - непосещённый нод с минимальной дистанцей
 
             foreach (Hex possibleU in unvisited)
             {
@@ -258,8 +247,7 @@ public class Grid : MonoBehaviour
             foreach (Hex v in u.neighbours)
             {
                 //float alt = dist[u] + u.DistanceTo(v);
-                float alt = dist[u] + CostToEnterTile(u.q, u.r, v.q, v.r);
-                //float alt = dist[u] + 1;
+                float alt = dist[u] + CostToEnterTile(u, v);
 
                 if (alt < dist[v])
                 {
@@ -296,31 +284,8 @@ public class Grid : MonoBehaviour
         }*/
 
         selectedUnit.GetComponent<UnitCharacteristic>().currentPath = currentPath;
-
         selectedUnit.GetComponent<UnitCharacteristic>().ReadyToMove();
-       
     }
-
-    /*
-    public GameObject[] BubbleSort()
-    {
-        GameObject temp;
-        for (int i = 0; i < unitPrefabClone.Length; i++)
-        {
-            for (int j = i + 1; j < unitPrefabClone.Length; j++)
-            {
-                if (unitPrefabClone[i].GetComponent<UnitCharacteristic>().unit.initiative < unitPrefabClone[j].GetComponent<UnitCharacteristic>().unit.initiative ||
-                   (unitPrefabClone[i].GetComponent<UnitCharacteristic>().unit.initiative == unitPrefabClone[j].GetComponent<UnitCharacteristic>().unit.initiative &&
-                    unitPrefabClone[i].GetComponent<UnitCharacteristic>().unit.spawnLocation.y < unitPrefabClone[j].GetComponent<UnitCharacteristic>().unit.spawnLocation.y))
-                {
-                    temp = unitPrefabClone[i];
-                    unitPrefabClone[i] = unitPrefabClone[j];
-                    unitPrefabClone[j] = temp;
-                }
-            }
-        }
-        return unitPrefabClone;
-    }*/
 
     //сортируем юнитов для очерёдности ходов изходя из статов юнита и его места спавна
     public GameObject[] BubbleSort()
@@ -343,15 +308,16 @@ public class Grid : MonoBehaviour
         return unitPrefab;
     }
     
-   
 
     private void OnEnable()
     {
+        EventManager.StartListening("Move", hexListener);
         EventManager.StartListening("Next", QueueManager);
     }
 
     private void OnDisable()
     {
+        EventManager.StartListening("Move", hexListener);
         EventManager.StopListening("Next", QueueManager);
     }
 
@@ -366,7 +332,6 @@ public class Grid : MonoBehaviour
 
         if (index < unitPrefab.Length)
         {
-            //selectedUnit = unitPrefabClone[index];
             selectedUnit = unitPrefab[index];
         }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
-public class ThisEvent : UnityEvent<float, float> { }
+public class ThisEvent : UnityEvent<Hex> { }
 
 public class EventManager : MonoBehaviour
 {
@@ -44,8 +44,8 @@ public class EventManager : MonoBehaviour
 
     }
 
-    //старый Move
-    public static void StartListening(string eventName, UnityAction<float, float> listener)
+    //Move
+    public static void StartListening(string eventName, UnityAction<Hex> listener)
     {
         ThisEvent thisEvent = null;
         //по имени ивента получаем значение и запихиваем его в thisEvent ?
@@ -78,8 +78,8 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    //старый Move
-    public static void StopListening(string eventName, UnityAction<float, float> listener)
+    //Move
+    public static void StopListening(string eventName, UnityAction<Hex> listener)
     {
         if (eventManager == null) { return; }
 
@@ -104,14 +104,14 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    //старый Move
-    public static void TriggerEvent(string eventName, float valueX, float valueY)
+    //Move
+    public static void TriggerEvent(string eventName, Hex hex)
     {
         ThisEvent thisEvent = null;
 
         if (Instance.eventDictionary.TryGetValue(eventName, out thisEvent))
         {
-            thisEvent.Invoke(valueX, valueY);
+            thisEvent.Invoke(hex);
         }
     }
 

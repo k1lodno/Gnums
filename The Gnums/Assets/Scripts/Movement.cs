@@ -7,6 +7,7 @@ using UnityEngine.Events;
 
 public class Movement : MonoBehaviour
 {
+    /*
     private Animator anim;
 
     private Vector3 target;
@@ -42,6 +43,7 @@ public class Movement : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
+    ?
     private void OnEnable()
     {
         EventManager.StartListening("Move", someListener);
@@ -130,5 +132,5 @@ public class Movement : MonoBehaviour
 
         }
 
-    }
+    }*/
 }

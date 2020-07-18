@@ -69,13 +69,14 @@ public class UnitCharacteristic : MonoBehaviour {
 
         if (transform.position.Equals(target))
         {
+            /*
             Debug.Log(transform.position);
             Debug.Log(target);
 
             Debug.Log(currentPath[currNode].gameObject.transform.position);
             Debug.Log(currentPath[currentPath.Count - 1].gameObject.transform.position);
             //гекс до которого дошёл юнит
-            currentPath[currNode].isWalkable = false;
+            //currentPath[currNode].isWalkable = false;*/
 
             move = false;
          
@@ -97,8 +98,8 @@ public class UnitCharacteristic : MonoBehaviour {
             target.z = target.z + 1;
 
             //какого то хера всё равно вызывается хотя не должен проходить иф
-            Debug.Log(transform.position);
-            Debug.Log(target);
+            //Debug.Log(transform.position);
+            //Debug.Log(target);
             EventManager.TriggerEvent("Next");
         }
 
@@ -122,6 +123,7 @@ public class UnitCharacteristic : MonoBehaviour {
             target = currentPath[currentPath.Count - 1].gameObject.transform.position;
             target = new Vector3(target.x, target.y + transform.localScale.y / 3, 0);
             StartCoroutine(MoveAlongPath());
+
         }
     }
 

@@ -18,12 +18,16 @@ public class Hex : MonoBehaviour
 
     public bool isWalkable; 
 
-    public Action<Hex> onHexClick; 
+    public Action<Hex> onHexClick;
+
+    private void Awake()
+    {
+        isWalkable = true;
+    }
 
     void Start()
     {
         render = gameObject.GetComponentInChildren<SpriteRenderer>();
-        isWalkable = true;
     }
 
     public void SetCoord(int q, int r)
@@ -50,7 +54,8 @@ public class Hex : MonoBehaviour
 
         FindObjectOfType<Grid>().selectedUnit.GetComponent<UnitCharacteristic>().isSelected = true;
 
-        onHexClick?.Invoke(this);
+        //onHexClick?.Invoke(this);
+        EventManager.TriggerEvent("Move", this);
 
         /*
         if (EventSystem.current.IsPointerOverGameObject())
@@ -62,11 +67,6 @@ public class Hex : MonoBehaviour
 
     public float DistanceTo(Hex n)
     {
-        if (n == null)
-        {
-            Debug.LogError("WTF?");
-        }
-
         return Vector2.Distance(
             new Vector2(q, r),
             new Vector2(n.q, n.r)
