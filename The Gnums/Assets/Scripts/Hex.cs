@@ -4,21 +4,25 @@ using UnityEngine;
 using System;
 using UnityEngine.EventSystems;
 
-//класс гекса
+
 public class Hex : MonoBehaviour
 {
-    public  int q; //column
-    public  int r; //row
-    public  int s;
+    private int q; //column
+    private int r; //row
+    //public int s;
 
-    public List<Hex> neighbours = new List<Hex>(); //соседи гекса
+    private List<Hex> neighbours = new List<Hex>(); //соседи гекса
 
-    bool mouse;
-    SpriteRenderer render;
+    private bool mouse;
+    private SpriteRenderer render;
 
-    public bool isWalkable; 
+    public bool isWalkable;
 
-    public Action<Hex> onHexClick;
+    public int Q { get => q; set => q = value; }
+    public int R { get => r; set => r = value; }
+    public List<Hex> Neighbours { get => neighbours; set => neighbours = value; }
+
+    //public Action<Hex> onHexClick;
 
     private void Awake()
     {
@@ -32,9 +36,9 @@ public class Hex : MonoBehaviour
 
     public void SetCoord(int q, int r)
     {
-        this.q = q;
-        this.r = r;
-        this.s = -(q + r);
+        this.Q = q;
+        this.R = r;
+        //this.s = -(q + r);
     }
 
     private void OnMouseEnter()
@@ -51,26 +55,9 @@ public class Hex : MonoBehaviour
 
     private void OnMouseDown()
     {
-
-        FindObjectOfType<Grid>().selectedUnit.GetComponent<UnitCharacteristic>().isSelected = true;
-
+        //FindObjectOfType<Grid>().selectedUnit.GetComponent<UnitCharacteristic>().isSelected = true;
         //onHexClick?.Invoke(this);
-        EventManager.TriggerEvent("Move", this);
-
-        /*
-        if (EventSystem.current.IsPointerOverGameObject())
-        {
-            FindObjectOfType<Grid>().selectedUnit.GetComponent<Movement>().isSelected = true;
-            EventManager.TriggerEvent("Move", q, r);
-        }*/
-    }
-
-    public float DistanceTo(Hex n)
-    {
-        return Vector2.Distance(
-            new Vector2(q, r),
-            new Vector2(n.q, n.r)
-            );
+        EventManager.Instance.TriggerEvent("Move", this);
     }
 }
 

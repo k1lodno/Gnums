@@ -5,20 +5,18 @@ using UnityEngine;
 
 public class UnitCharacteristic : MonoBehaviour {
 
+    //вылетают ошибки при попытке состряпать свойство
     public BaseCharacteristic unit;
 
-    public int tileX, tileY;
-    public Grid map;
-
-    public List<Hex> currentPath;
     int currNode;
 
-    public float speed = 2f;
-
+    float speed = 2f;
     float timer = 0;
+
     static Vector3 currentPosition;
     Vector3 startPosition;
 
+    [SerializeField]
     private Animator anim;
 
     private Vector3 target;
@@ -26,34 +24,18 @@ public class UnitCharacteristic : MonoBehaviour {
     private bool move = false;
     private bool right = true;
 
-    //private UnityAction<float, float> someListener;
+    private Hex currentHex;
 
-    private bool _isSelected;
-
-    public bool isSelected
-    {
-        get
-        {
-            return _isSelected;
-        }
-
-        set
-        {
-            _isSelected = value;
-        }
-    }
+    public Hex CurrentHex { get => currentHex; set => currentHex = value; }
 
     void Start()
     {
-        anim = GetComponent<Animator>();
-        currentPath = null;
         currNode = 0;
         startPosition = transform.position;
     }
 
     void Update()
     {
-        if (currentPath != null) {}
 
         if (move)
         {
@@ -67,40 +49,43 @@ public class UnitCharacteristic : MonoBehaviour {
             }
         }
 
-        if (transform.position.Equals(target))
+        if (move)
         {
-            /*
-            Debug.Log(transform.position);
-            Debug.Log(target);
-
-            Debug.Log(currentPath[currNode].gameObject.transform.position);
-            Debug.Log(currentPath[currentPath.Count - 1].gameObject.transform.position);
-            //гекс до которого дошёл юнит
-            //currentPath[currNode].isWalkable = false;*/
-
-            move = false;
-         
-            if (right)
+            if (transform.position.Equals(target))
             {
-                anim.SetBool("Go", false);
+                /*
+                Debug.Log(transform.position);
+                Debug.Log(target);
+
+                Debug.Log(currentPath[currNode].gameObject.transform.position);
+                Debug.Log(currentPath[currentPath.Count - 1].gameObject.transform.position);
+                //гекс до которого дошёл юнит
+                //currentPath[currNode].isWalkable = false;*/
+
+                move = false;
+
+                if (right)
+                {
+                    anim.SetBool("Go", false);
+                }
+
+                //isSelected = false;
+
+                if (!right)
+                {
+                    anim.SetBool("Go", false);
+                    Flip();
+                }
+
+                target.x = target.x + 1;
+                target.y = target.y + 1;
+                target.z = target.z + 1;
+
+                //какого то хера всё равно вызывается хотя не должен проходить иф
+                //Debug.Log(transform.position);
+                //Debug.Log(target);
+                EventManager.Instance.TriggerEvent("Next");
             }
-
-            isSelected = false;
-
-            if (!right)
-            {
-                anim.SetBool("Go", false);
-                Flip();
-            }
-
-            target.x = target.x + 1;
-            target.y = target.y + 1;
-            target.z = target.z + 1;
-
-            //какого то хера всё равно вызывается хотя не должен проходить иф
-            //Debug.Log(transform.position);
-            //Debug.Log(target);
-            EventManager.TriggerEvent("Next");
         }
 
         if (target.x < transform.position.x && right)
@@ -114,21 +99,25 @@ public class UnitCharacteristic : MonoBehaviour {
         }
     }
 
-    
-    public void ReadyToMove()
+    public void Spawn(Hex hex)
     {
-        if (!move & isSelected)
+        transform.localPosition = hex.transform.localPosition;
+        CurrentHex = hex;
+    }
+
+    public void Move(List<Hex> currentPath)
+    {
+        if (!move)
         {
             move = true;
             target = currentPath[currentPath.Count - 1].gameObject.transform.position;
-            target = new Vector3(target.x, target.y + transform.localScale.y / 3, 0);
-            StartCoroutine(MoveAlongPath());
-
+            target = new Vector3(target.x, target.y, 0);
+            StartCoroutine(MoveAlongPath(currentPath));
         }
     }
 
     //передвижение юнита по определённому пути
-    IEnumerator MoveAlongPath()
+    IEnumerator MoveAlongPath(List<Hex> currentPath)
     {
         currNode = 0; 
 
@@ -138,7 +127,7 @@ public class UnitCharacteristic : MonoBehaviour {
 
             //вылетала ошибка индекс аут оф рейгдж почему хз
             currentPosition = currentPath[currNode].gameObject.transform.position;
-            currentPosition = new Vector3(currentPosition.x, currentPosition.y + transform.localScale.y / 3, 0);
+            currentPosition = new Vector3(currentPosition.x, currentPosition.y, 0);
 
             timer += Time.deltaTime * speed;
 
@@ -146,7 +135,7 @@ public class UnitCharacteristic : MonoBehaviour {
             {
                 Debug.Log(currNode);
                 move = true;
-                DrawPath();
+                DrawPath(currentPath);
                 transform.position = Vector3.Lerp(startPosition, currentPosition, timer); //двигаем юнита
             }
             else
@@ -158,7 +147,7 @@ public class UnitCharacteristic : MonoBehaviour {
                     timer = 0;
                     startPosition = transform.position;
                     currentPosition = currentPath[currNode].gameObject.transform.position;
-                    currentPosition = new Vector3(currentPosition.x, currentPosition.y + transform.localScale.y / 3, 0);
+                    currentPosition = new Vector3(currentPosition.x, currentPosition.y, 0);
                 }
                 else
                 {
@@ -170,7 +159,7 @@ public class UnitCharacteristic : MonoBehaviour {
     }
 
     //отрисовка пути
-    private void DrawPath()
+    private void DrawPath(List<Hex> currentPath)
     {
         for(int i = 0; i< currentPath.Count - 1; i++)
         {
@@ -189,5 +178,4 @@ public class UnitCharacteristic : MonoBehaviour {
         scale.x *= -1;
         transform.localScale = scale;
     }
-
 }
