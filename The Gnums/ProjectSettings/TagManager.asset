@@ -50,3 +50,6 @@ TagManager:
   - name: Units
     uniqueID: 1821993855
     locked: 0
+  - name: HUD
+    uniqueID: 2491491513
+    locked: 0

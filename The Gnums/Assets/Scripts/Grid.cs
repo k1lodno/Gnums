@@ -7,7 +7,8 @@ using UnityEngine.Events;
 //Класс генерации поля
 public class Grid : MonoBehaviour
 {
-    public Hex hexPrefab;
+    [SerializeField]
+    Hex hexPrefab;
 
     private int rows = 13; //количество рядов
     private int cols = 17; //количество столбцов

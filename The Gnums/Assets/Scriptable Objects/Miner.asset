@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f058c357fc9d794fa672ec1ae31ef2c, type: 3}
+  m_Name: Miner
+  m_EditorClassIdentifier: 
+  raceType: 0
+  armourType: 0
+  unitType: 0
+  unitName: Miner
+  attack: 4
+  defence: 6
+  ammunition: 0
+  minDamage: 1
+  maxDamage: 2
+  health: 10
+  currentHealth: 10
+  speed: 3
+  initiative: 3
+  growth: 0
+  cost: 0
+  spawnLocation: {x: 0, y: 0}

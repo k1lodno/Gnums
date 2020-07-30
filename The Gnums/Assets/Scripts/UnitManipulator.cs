@@ -18,18 +18,20 @@ public class UnitManipulator : MonoBehaviour
  
     private void OnHexClick(Hex hex)
     {
-        var currentPath = Pathfinding.Instance.GeneratePathTo(spawn.SelectedUnit.CurrentHex, hex);
+        if (hex.isWalkable)
+        {
+            var currentPath = Pathfinding.Instance.GeneratePathTo(spawn.SelectedUnit.CurrentHex, hex);
 
-        spawn.SelectedUnit.Move(currentPath);
+            spawn.SelectedUnit.Move(currentPath);
 
-        //поидее здесь не правильно
-        spawn.SelectedUnit.CurrentHex.isWalkable = true;
-        spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.white;
-        
-        spawn.SelectedUnit.CurrentHex = hex;
+            spawn.SelectedUnit.CurrentHex.isWalkable = true;
+            spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.white;
 
-        spawn.SelectedUnit.CurrentHex.isWalkable = false;
-        spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.black;
+            spawn.SelectedUnit.CurrentHex = hex;
+
+            spawn.SelectedUnit.CurrentHex.isWalkable = false;
+            spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.black;
+        }
     }
 
     private void OnEnable()
@@ -42,7 +44,5 @@ public class UnitManipulator : MonoBehaviour
     {
         EventManager.Instance.StartListening("Move", hexListener);
 
-    }
-
-  
+    } 
 }

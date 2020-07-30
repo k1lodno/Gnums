@@ -2,15 +2,43 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class BaseCharacteristic
+[CreateAssetMenu(fileName ="New Unit", menuName = "Unit")]
+public class BaseUnit: ScriptableObject
 {
+    //раса юнита
+    public enum Race
+    {
+        DWARF,
+        HUMAN,
+        ORC
+    }
+
+    //тип брони юнита
+    public enum TypeOfArmour
+    {
+        LIGHT,
+        MEDIUM,
+        HEAVY
+    }
+
+    public enum TypeOfUnit
+    {
+        MELEE,
+        RANGE
+    }
+
+    public Race raceType;
+    public TypeOfArmour armourType;
+    public TypeOfUnit unitType;
+
     //название юнита
-    public string name;
+    public string unitName;
     //параметр атаки
     public int attack;
     //параметр защиты
-    public int defense;
+    public int defence;
+    //боезапас
+    public int ammunition;
     //минимальный урон 
     public int minDamage;
     //максимальынй урон
@@ -30,22 +58,5 @@ public class BaseCharacteristic
     //координаты спавна юнита
     public Vector2 spawnLocation;
 
-    //раса юнита
-    public enum Race
-    {
-        DWARF,
-        HUMAN,
-        ORC
-    }
-
-    //тип брони юнита
-    public enum TypeOfArmour
-    {
-        LIGHT,
-        MEDIUM,
-        HEAVY
-    }
-
-    public Race RaceType;
-    public TypeOfArmour ArmourType;
+ 
 }
