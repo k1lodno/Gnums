@@ -21,14 +21,14 @@ public class UnitStatsView : MonoBehaviour
     {
         unitStatsPanel.gameObject.SetActive(true);
 
-        unitName.text = clickedUnit.baseUnit.unitName;
-        attack.text = "Attack " + clickedUnit.baseUnit.attack.ToString();
-        defence.text = "Defence " + clickedUnit.baseUnit.defence.ToString();
-        damage.text = "Damage " + clickedUnit.baseUnit.minDamage.ToString() + "-" + clickedUnit.baseUnit.maxDamage.ToString();
-        ammunition.text = "Ammunition " + clickedUnit.baseUnit.ammunition.ToString();
-        health.text = "Health " + clickedUnit.baseUnit.health.ToString();
-        curHealth.text = "Cur. Health " + clickedUnit.baseUnit.currentHealth.ToString();
-        speed.text = "Speed " + clickedUnit.baseUnit.speed.ToString();
-        initiative.text = "Initiative " + clickedUnit.baseUnit.initiative.ToString();
+        unitName.text = clickedUnit.unitName;
+        attack.text = "Attack " + clickedUnit.attack.ToString();
+        defence.text = "Defence " + clickedUnit.defence.ToString();
+        damage.text = "Damage " + clickedUnit.minDamage.ToString() + "-" + clickedUnit.maxDamage.ToString();
+        ammunition.text = "Ammunition " + clickedUnit.ammunition.ToString();
+        health.text = "Health " + clickedUnit.health.ToString();
+        curHealth.text = "Cur. Health " + clickedUnit.currentHealth.ToString();
+        speed.text = "Speed " + clickedUnit.speed.ToString();
+        initiative.text = "Initiative " + clickedUnit.initiative.ToString();
     }
 }

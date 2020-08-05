@@ -11,26 +11,21 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     Transform unitSpawnPlace;
 
-    public Unit[] unitPrefab; //массив юнитов
+    public Unit[] unitPrefab; //массив юнитов игрока
     private List<Unit> unitPrefabClone;
-    private Unit selectedUnit; //активный юнит
 
-    public Unit[] enemyList;
+    public Unit[] enemyList; //массив юнитов ии
     private List<Unit> enemyListClone;
 
-    int index = 0; //индекс юнита в массиве юнитов
-
-    public Unit SelectedUnit { get => selectedUnit; set => selectedUnit = value; }
+    public List<Unit> UnitPrefabClone { get => unitPrefabClone; set => unitPrefabClone = value; }
+    public List<Unit> EnemyListClone { get => enemyListClone; set => enemyListClone = value; }
 
     void Start()
     {
-        unitPrefabClone = new List<Unit>();
-        enemyListClone = new List<Unit>();
+        UnitPrefabClone = new List<Unit>();
+        EnemyListClone = new List<Unit>();
         SelectSpawnPlaces();
-        SelectedUnit = unitPrefabClone[index];
-        selectedUnit.GetMovableRange(selectedUnit.CurrentHex, 0);
     }
-
 
     public void SelectSpawnPlaces()
     {
@@ -48,19 +43,20 @@ public class SpawnManager : MonoBehaviour
                         if (unitPrefab[k] != null)
                         {
                             var unit = Instantiate(unitPrefab[k], unitSpawnPlace);
-                            unitPrefabClone.Add(unit);
+                            UnitPrefabClone.Add(unit);
 
                             var hex = grid.GetHex(i, j);
 
                             unit.Spawn(hex);
 
                             grid.Graph[i, j].isWalkable = false;
-                            grid.Graph[i, j].GetComponent<SpriteRenderer>().color = Color.black;
+                            grid.Graph[i, j].render.color = Color.black;
                         }
 
                         k++;
                     }
                 }
+                //противоположная сторона
                 else if (i == (grid.Cols - 1) && j % 2 != 0)
                 {
                     if (l < enemyList.Length)
@@ -68,14 +64,14 @@ public class SpawnManager : MonoBehaviour
                         if (enemyList[l] != null)
                         {
                             var enemy = Instantiate(enemyList[l], unitSpawnPlace);
-                            enemyListClone.Add(enemy);
+                            EnemyListClone.Add(enemy);
 
                             var hex = grid.GetHex(i, j);
 
                             enemy.Spawn(hex);
 
                             grid.Graph[i, j].isWalkable = false;
-                            grid.Graph[i, j].GetComponent<SpriteRenderer>().color = Color.black;
+                            grid.Graph[i, j].render.color = Color.black;
                         }
 
                         l++;
@@ -86,36 +82,9 @@ public class SpawnManager : MonoBehaviour
         }
 
         //не учитывается то что если у юнитов одинаковая инициатива то должен ходить верхний
-        unitPrefabClone.Sort(delegate (Unit x, Unit y)
+        UnitPrefabClone.Sort(delegate (Unit x, Unit y)
         {
             return y.baseUnit.initiative.CompareTo(x.baseUnit.initiative);
         });
-    }
-
-
-    private void OnEnable()
-    {
-        EventManager.Instance.StartListening("Next", QueueManager);
-    }
-
-    private void OnDisable()
-    {
-        EventManager.Instance.StopListening("Next", QueueManager);
-    }
-
-    public void QueueManager()
-    {
-        index++;
-
-        if (index == 7)
-        {
-            index = 0;
-        }
-
-        if (index < unitPrefabClone.Count)
-        {
-            SelectedUnit = unitPrefabClone[index];
-            selectedUnit.GetMovableRange(selectedUnit.CurrentHex, 0);
-        }
     }
 }

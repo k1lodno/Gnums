@@ -4,30 +4,33 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
-public class ThisEvent : UnityEvent<Hex> { }
+public class MoveEvent : UnityEvent<Hex> { }
+
+[System.Serializable]
+public class AttackEvent : UnityEvent<Unit> { }
 
 public class EventManager : Singleton<EventManager>
 {
     //библиотека ивентов
-    private Dictionary<string, ThisEvent> eventDictionary = new Dictionary<string, ThisEvent>();
-    private Dictionary<string, UnityEvent> secondDictionary = new Dictionary<string, UnityEvent>();
+    private Dictionary<string, MoveEvent> moveDictionary = new Dictionary<string, MoveEvent>();
+    private Dictionary<string, UnityEvent> queueDictionary = new Dictionary<string, UnityEvent>();
+    private Dictionary<string, AttackEvent> attackDictionary = new Dictionary<string, AttackEvent>();
 
-    
 
     //Move
     public void StartListening(string eventName, UnityAction<Hex> listener)
     {
-        ThisEvent thisEvent = null;
+        MoveEvent thisEvent = null;
         //по имени ивента получаем значение и запихиваем его в thisEvent ?
-        if (eventDictionary.TryGetValue(eventName, out thisEvent))
+        if (moveDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.AddListener(listener);
         }
         else
         {
-            thisEvent = new ThisEvent();
+            thisEvent = new MoveEvent();
             thisEvent.AddListener(listener);
-            eventDictionary.Add(eventName, thisEvent);
+            moveDictionary.Add(eventName, thisEvent);
         }
     }
 
@@ -36,7 +39,7 @@ public class EventManager : Singleton<EventManager>
     {
         UnityEvent thisEvent = null;
         //по имени ивента получаем значение и запихиваем его в thisEvent ?
-        if (secondDictionary.TryGetValue(eventName, out thisEvent))
+        if (queueDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.AddListener(listener);
         }
@@ -44,7 +47,24 @@ public class EventManager : Singleton<EventManager>
         {
             thisEvent = new UnityEvent();
             thisEvent.AddListener(listener);
-            secondDictionary.Add(eventName, thisEvent);
+            queueDictionary.Add(eventName, thisEvent);
+        }
+    }
+
+    //Attack
+    public void StartListening(string eventName, UnityAction<Unit> listener)
+    {
+        AttackEvent thisEvent = null;
+        //по имени ивента получаем значение и запихиваем его в thisEvent ?
+        if (attackDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.AddListener(listener);
+        }
+        else
+        {
+            thisEvent = new AttackEvent();
+            thisEvent.AddListener(listener);
+            attackDictionary.Add(eventName, thisEvent);
         }
     }
 
@@ -52,9 +72,9 @@ public class EventManager : Singleton<EventManager>
     public void StopListening(string eventName, UnityAction<Hex> listener)
     {
 
-        ThisEvent thisEvent = null;
+        MoveEvent thisEvent = null;
 
-        if (eventDictionary.TryGetValue(eventName, out thisEvent))
+        if (moveDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.RemoveListener(listener);
         }
@@ -67,7 +87,19 @@ public class EventManager : Singleton<EventManager>
 
         UnityEvent thisEvent = null;
 
-        if (secondDictionary.TryGetValue(eventName, out thisEvent))
+        if (queueDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.RemoveListener(listener);
+        }
+    }
+
+    //Attack
+    public void StopListening(string eventName, UnityAction<Unit> listener)
+    {
+
+        AttackEvent thisEvent = null;
+
+        if (attackDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.RemoveListener(listener);
         }
@@ -76,9 +108,9 @@ public class EventManager : Singleton<EventManager>
     //Move
     public void TriggerEvent(string eventName, Hex hex)
     {
-        ThisEvent thisEvent = null;
+        MoveEvent thisEvent = null;
 
-        if (eventDictionary.TryGetValue(eventName, out thisEvent))
+        if (moveDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.Invoke(hex);
         }
@@ -89,9 +121,20 @@ public class EventManager : Singleton<EventManager>
     {
         UnityEvent thisEvent = null;
 
-        if (secondDictionary.TryGetValue(eventName, out thisEvent))
+        if (queueDictionary.TryGetValue(eventName, out thisEvent))
         {
             thisEvent.Invoke();
+        }
+    }
+
+    //Attack
+    public void TriggerEvent(string eventName, Unit unit)
+    {
+        AttackEvent thisEvent = null;
+
+        if (attackDictionary.TryGetValue(eventName, out thisEvent))
+        {
+            thisEvent.Invoke(unit);
         }
     }
 }

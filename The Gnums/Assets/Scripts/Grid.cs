@@ -61,7 +61,6 @@ public class Grid : MonoBehaviour
             for (int j = 0; j < Rows; j++)
             {
                 hexGo = Instantiate(hexPrefab, Position(i, j), Quaternion.identity, transform);
-                //hexGo.onHexClick += OnHexClick;
                 hexGo.SetCoord(i, j);
 
                 Graph[i, j] = hexGo;

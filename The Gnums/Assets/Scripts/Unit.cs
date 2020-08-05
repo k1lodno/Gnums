@@ -3,10 +3,36 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static EventController;
 
-public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
+public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPointerEnterHandler
 {
     public BaseUnit baseUnit;
+
+    //название юнита
+    public string unitName;
+    //параметр атаки
+    public int attack;
+    //параметр защиты
+    public int defence;
+    //боезапас
+    public int ammunition;
+    //минимальный урон 
+    public int minDamage;
+    //максимальынй урон
+    public int maxDamage;
+    //здоровье 
+    public int health;
+    //текущее здоровье
+    public int currentHealth;
+    //дальность пермещения
+    public int speed;
+    //инициатива юнита
+    public int initiative;
+    //прирост юнитов за ед. времени
+    public int growth;
+    //стоимость одного юнита
+    public int cost;
 
     private GameObject view;
 
@@ -25,41 +51,33 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPoin
     private bool right = true;
 
     private Hex currentHex;
+    private List<Hex> reachableHexes = new List<Hex>();
+    private List<Hex> attackableHexes = new List<Hex>();
 
     public Hex CurrentHex { get => currentHex; set => currentHex = value; }
     public bool IsMoving { get => isMoving; set => isMoving = value; }
+    public List<Hex> ReachableHexes { get => reachableHexes; set => reachableHexes = value; }
+    public List<Hex> AttackableHexes { get => attackableHexes; set => attackableHexes = value; }
 
     void Start()
     {
+        unitName = baseUnit.unitName;
+        attack = baseUnit.attack;
+        defence = baseUnit.defence;
+        ammunition = baseUnit.ammunition;
+        minDamage = baseUnit.minDamage;
+        maxDamage = baseUnit.maxDamage;
+        health = baseUnit.health;
+        currentHealth = baseUnit.currentHealth;
+        speed = baseUnit.speed;
+        initiative = baseUnit.initiative;
+
         view = GameObject.Find("UnitStatsView");
         startPosition = transform.position;
     }
 
     void Update()
     {
-
-        /*
-        if (Input.GetMouseButton(1))
-        {
-            
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            if (GetComponent<Collider2D>().OverlapPoint(mousePosition))
-            {
-                Debug.Log("зажато");
-                Debug.Log(view);
-                view.GetComponent<UnitStatsView>().SetStatsView(this);
-                //view.SetStatsView(this);
-            }
-
-            view.GetComponent<UnitStatsView>().SetStatsView(this);
-        }
-        else
-        {
-            view.GetComponent<UnitStatsView>().unitStatsPanel.gameObject.SetActive(false);
-        }
-    */
-
 
         if (target.x < transform.position.x && right)
         {
@@ -73,16 +91,47 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPoin
     }
 
     public void GetMovableRange(Hex curHex, int s)
-    {
+    {      
         if (s >= baseUnit.speed)
             return;
 
         foreach (var v in curHex.Neighbours)
         {
-            v.GetComponent<SpriteRenderer>().color = Color.black;
-
+            v.render.color = Color.black;
+            ReachableHexes.Add(v);
             GetMovableRange(v, s + 1);
         }
+    }
+
+    public void GetAttackRange(Hex curHex, int i)
+    {
+        if (baseUnit.unitType == BaseUnit.TypeOfUnit.MELEE)
+        {
+            foreach (var v in curHex.Neighbours)
+            {
+                AttackableHexes.Add(v);
+            }
+        }
+        else
+        {
+            //рейнж атаки для рейнжевиков, потом добавить сломанную стрелу
+            if (i >= 17)
+                return;
+
+            foreach (var v in curHex.Neighbours)
+            {
+                AttackableHexes.Add(v);
+                GetAttackRange(v, i + 1);
+            }
+        }
+    }
+
+    public void GetDamage(Unit attacker)
+    {
+        System.Random rnd = new System.Random();
+        int dmg = rnd.Next(attacker.baseUnit.minDamage, attacker.baseUnit.maxDamage);
+        baseUnit.currentHealth -= dmg;
+        Debug.Log(baseUnit.unitName + " получает " + dmg + " урона");
     }
 
     public void Spawn(Hex hex)
@@ -147,7 +196,8 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPoin
                         Flip();
                     }
 
-                    EventManager.Instance.TriggerEvent("Next");
+                    //EventManager.Instance.TriggerEvent("Next");
+                    EventController.Instance.TriggerEvent("Next", new BaseEvent());
 
                     yield break;
                 }
@@ -177,24 +227,34 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPoin
         transform.localScale = scale;
     }
 
+
     public void OnPointerDown(PointerEventData eventData)
     {
-        //if (eventData.button == PointerEventData.InputButton.Right)
-        Debug.Log("Right click");
-        view.GetComponent<UnitStatsView>().SetStatsView(this);
+        if (eventData.button == PointerEventData.InputButton.Right)
+            view.GetComponent<UnitStatsView>().SetStatsView(this);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        //if (eventData.button == PointerEventData.InputButton.Right)
-        Debug.Log("Right click");
-        view.GetComponent<UnitStatsView>().unitStatsPanel.gameObject.SetActive(false);
+        if (eventData.button == PointerEventData.InputButton.Right)
+            view.GetComponent<UnitStatsView>().unitStatsPanel.gameObject.SetActive(false);
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    /*
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
-            Debug.Log("Right click");
+        Debug.Log("detect");
+    }
+
+    void OnMouseEnter()
+    {
+        Debug.Log("detect");
+    }*/
+
+    void OnMouseDown()
+    {
+        //EventManager.Instance.TriggerEvent("Attack", this);
+        EventController.Instance.TriggerEvent("Attack", new OnClickEvent<Unit>(this));
     }
 }
 

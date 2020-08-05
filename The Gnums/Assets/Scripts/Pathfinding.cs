@@ -12,12 +12,12 @@ public class Pathfinding : Singleton<Pathfinding>
     public List<Hex> GeneratePathTo(Hex source, Hex target)
     {
 
-        
+        /*
         if (!gridExample.Graph[target.Q, target.R].isWalkable)
         {
             Debug.Log("стопэ");
             return null;
-        }
+        }*/
 
         Dictionary<Hex, float> dist = new Dictionary<Hex, float>(); //дистанция от сёрса
         Dictionary<Hex, Hex> prev = new Dictionary<Hex, Hex>();     //предыдущий в оптимальном пути

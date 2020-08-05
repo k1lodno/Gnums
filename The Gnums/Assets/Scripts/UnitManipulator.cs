@@ -6,43 +6,50 @@ using UnityEngine.Events;
 public class UnitManipulator : MonoBehaviour
 {
     [SerializeField]
-    SpawnManager spawn;
+    QueueManager qUnit;
 
-    private UnityAction<Hex> hexListener;
+    [SerializeField]
+    SpawnManager unitsArray;
 
-    private void Awake()
+    private void OnHexClick(OnClickEvent<Hex> param)
     {
-        hexListener = new UnityAction<Hex>(OnHexClick);
+        var hex = param.OnClickObject;
+
+        if (hex.isWalkable && qUnit.SelectedUnit.ReachableHexes.Contains(hex)) 
+        {
+            var currentPath = Pathfinding.Instance.GeneratePathTo(qUnit.SelectedUnit.CurrentHex, hex);
+
+            qUnit.SelectedUnit.Move(currentPath);
+
+            qUnit.SelectedUnit.CurrentHex.isWalkable = true;
+            qUnit.SelectedUnit.CurrentHex.render.color = Color.white;
+
+            qUnit.SelectedUnit.CurrentHex = hex;
+
+            qUnit.SelectedUnit.CurrentHex.isWalkable = false;
+            qUnit.SelectedUnit.CurrentHex.render.color = Color.black;
+        }
     }
 
- 
-    private void OnHexClick(Hex hex)
+    private void OnEnemyClick(OnClickEvent<Unit> param)
     {
-        if (hex.isWalkable)
+        var enemyUnit = param.OnClickObject;
+
+        if (unitsArray.EnemyListClone.Contains(enemyUnit) && qUnit.SelectedUnit.AttackableHexes.Contains(enemyUnit.CurrentHex))
         {
-            var currentPath = Pathfinding.Instance.GeneratePathTo(spawn.SelectedUnit.CurrentHex, hex);
-
-            spawn.SelectedUnit.Move(currentPath);
-
-            spawn.SelectedUnit.CurrentHex.isWalkable = true;
-            spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.white;
-
-            spawn.SelectedUnit.CurrentHex = hex;
-
-            spawn.SelectedUnit.CurrentHex.isWalkable = false;
-            spawn.SelectedUnit.CurrentHex.GetComponent<SpriteRenderer>().color = Color.black;
+            enemyUnit.GetDamage(qUnit.SelectedUnit);
         }
     }
 
     private void OnEnable()
     {
-        EventManager.Instance.StartListening("Move", hexListener);
-
+        EventController.Instance.AddListener<OnClickEvent<Hex>>("Move", OnHexClick);
+        EventController.Instance.AddListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
     }
 
     private void OnDisable()
     {
-        EventManager.Instance.StartListening("Move", hexListener);
-
+        EventController.Instance.RemoveListener<OnClickEvent<Hex>>("Move", OnHexClick);
+        EventController.Instance.RemoveListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
     } 
 }

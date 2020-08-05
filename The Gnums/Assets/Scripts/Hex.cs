@@ -5,7 +5,7 @@ using System;
 using UnityEngine.EventSystems;
 
 
-public class Hex : MonoBehaviour
+public class Hex : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     private int q; //column
     private int r; //row
@@ -14,7 +14,8 @@ public class Hex : MonoBehaviour
     private List<Hex> neighbours = new List<Hex>(); //соседи гекса
 
     private bool mouse;
-    private SpriteRenderer render;
+
+    public SpriteRenderer render;
 
     public bool isWalkable;
 
@@ -22,16 +23,9 @@ public class Hex : MonoBehaviour
     public int R { get => r; set => r = value; }
     public List<Hex> Neighbours { get => neighbours; set => neighbours = value; }
 
-    //public Action<Hex> onHexClick;
-
     private void Awake()
     {
         isWalkable = true;
-    }
-
-    void Start()
-    {
-        render = gameObject.GetComponentInChildren<SpriteRenderer>();
     }
 
     public void SetCoord(int q, int r)
@@ -41,23 +35,21 @@ public class Hex : MonoBehaviour
         //this.s = -(q + r);
     }
 
-    private void OnMouseEnter()
+    private void OnMouseDown()
+    {
+        EventController.Instance.TriggerEvent("Move", new OnClickEvent<Hex>(this));
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
     {
         mouse = true;
         render.color = Color.black;
     }
 
-    private void OnMouseExit()
+    public void OnPointerExit(PointerEventData eventData)
     {
         mouse = false;
         render.color = Color.white;
-    }
-
-    private void OnMouseDown()
-    {
-        //FindObjectOfType<Grid>().selectedUnit.GetComponent<UnitCharacteristic>().isSelected = true;
-        //onHexClick?.Invoke(this);
-        EventManager.Instance.TriggerEvent("Move", this);
     }
 }
 

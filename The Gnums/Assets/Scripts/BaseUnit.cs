@@ -55,8 +55,7 @@ public class BaseUnit: ScriptableObject
     public int growth;
     //стоимость одного юнита
     public int cost;
-    //координаты спавна юнита
-    public Vector2 spawnLocation;
 
- 
+    //координаты спавна юнита
+    //public Vector2 spawnLocation;
 }
