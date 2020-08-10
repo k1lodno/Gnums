@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 4048083042269514}
   - component: {fileID: 23025241569844958}
   - component: {fileID: 102522671936958872}
+  - component: {fileID: 3243501149410333913}
   m_Layer: 0
   m_Name: Coordinates
   m_TagString: Untagged
@@ -184,6 +185,17 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4278190335
+--- !u!210 &3243501149410333913
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622143142165522}
+  m_Enabled: 1
+  m_SortingLayerID: 1821993855
+  m_SortingLayer: 4
+  m_SortingOrder: 0
 --- !u!1 &6732607126087146535
 GameObject:
   m_ObjectHideFlags: 0

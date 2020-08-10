@@ -6,10 +6,7 @@ using UnityEngine.Events;
 public class UnitManipulator : MonoBehaviour
 {
     [SerializeField]
-    QueueManager qUnit;
-
-    [SerializeField]
-    SpawnManager unitsArray;
+    QueueManager qUnit = null;
 
     private void OnHexClick(OnClickEvent<Hex> param)
     {
@@ -35,7 +32,7 @@ public class UnitManipulator : MonoBehaviour
     {
         var enemyUnit = param.OnClickObject;
 
-        if (unitsArray.EnemyListClone.Contains(enemyUnit) && qUnit.SelectedUnit.AttackableHexes.Contains(enemyUnit.CurrentHex))
+        if (enemyUnit.IsEnemy && qUnit.SelectedUnit.AttackableHexes.Contains(enemyUnit.CurrentHex))
         {
             enemyUnit.GetDamage(qUnit.SelectedUnit);
         }
@@ -43,13 +40,19 @@ public class UnitManipulator : MonoBehaviour
 
     private void OnEnable()
     {
-        EventController.Instance.AddListener<OnClickEvent<Hex>>("Move", OnHexClick);
-        EventController.Instance.AddListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
+        if (EventController.Instance != null)
+        {
+            EventController.Instance.AddListener<OnClickEvent<Hex>>("Move", OnHexClick);
+            EventController.Instance.AddListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
+        }
     }
 
     private void OnDisable()
     {
-        EventController.Instance.RemoveListener<OnClickEvent<Hex>>("Move", OnHexClick);
-        EventController.Instance.RemoveListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
+        if (EventController.Instance != null)
+        {
+            EventController.Instance.RemoveListener<OnClickEvent<Hex>>("Move", OnHexClick);
+            EventController.Instance.RemoveListener<OnClickEvent<Unit>>("Attack", OnEnemyClick);
+        }
     } 
 }

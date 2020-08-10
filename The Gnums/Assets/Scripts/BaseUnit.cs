@@ -45,8 +45,6 @@ public class BaseUnit: ScriptableObject
     public int maxDamage;
     //здоровье 
     public int health;
-    //текущее здоровье
-    public int currentHealth;
     //дальность пермещения
     public int speed;
     //инициатива юнита

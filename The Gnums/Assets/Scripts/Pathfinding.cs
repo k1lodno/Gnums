@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class Pathfinding : Singleton<Pathfinding>
 {
     [SerializeField]
-    private Grid gridExample;
+    private Grid gridExample = null;
 
     //дийкстра
     public List<Hex> GeneratePathTo(Hex source, Hex target)

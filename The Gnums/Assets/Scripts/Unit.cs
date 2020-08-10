@@ -9,30 +9,27 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 {
     public BaseUnit baseUnit;
 
-    //название юнита
-    public string unitName;
+    //количество юнитов в стеке
+    private int numberOfUnits;
+
     //параметр атаки
-    public int attack;
+    private int attack;
     //параметр защиты
-    public int defence;
+    private int defence;
     //боезапас
-    public int ammunition;
+    private int ammunition;
     //минимальный урон 
-    public int minDamage;
+    private int minDamage;
     //максимальынй урон
-    public int maxDamage;
+    private int maxDamage;
     //здоровье 
-    public int health;
+    private int health;
     //текущее здоровье
-    public int currentHealth;
+    private int currentHealth;
     //дальность пермещения
-    public int speed;
+    private int speed;
     //инициатива юнита
-    public int initiative;
-    //прирост юнитов за ед. времени
-    public int growth;
-    //стоимость одного юнита
-    public int cost;
+    private int initiative;
 
     private GameObject view;
 
@@ -44,11 +41,20 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
     Vector3 startPosition;
     private Vector3 target;
 
+    System.Random rnd = new System.Random();
+
     [SerializeField]
-    private Animator anim;
+    private Animator anim = null;
+
+    [SerializeField]
+    TextMesh numOfUnits = null;
+
+    [SerializeField]
+    GameObject numPanelPrefab = null;
 
     private bool isMoving = false;
     private bool right = true;
+    bool isEnemy = false;
 
     private Hex currentHex;
     private List<Hex> reachableHexes = new List<Hex>();
@@ -58,20 +64,37 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
     public bool IsMoving { get => isMoving; set => isMoving = value; }
     public List<Hex> ReachableHexes { get => reachableHexes; set => reachableHexes = value; }
     public List<Hex> AttackableHexes { get => attackableHexes; set => attackableHexes = value; }
+    public int Attack { get => attack; set => attack = value; }
+    public int Defence { get => defence; set => defence = value; }
+    public int Ammunition { get => ammunition; set => ammunition = value; }
+    public int MinDamage { get => minDamage; set => minDamage = value; }
+    public int MaxDamage { get => maxDamage; set => maxDamage = value; }
+    public int Health { get => health; set => health = value; }
+    public int CurrentHealth { get => currentHealth; set => currentHealth = value; }
+    public int Speed { get => speed; set => speed = value; }
+    public int Initiative { get => initiative; set => initiative = value; }
+    public int NumberOfUnits { get => numberOfUnits; set => numberOfUnits = value; }
+    public bool IsEnemy { get => isEnemy; set => isEnemy = value; }
+
+    void Awake()
+    {
+        Attack = baseUnit.attack;
+        Defence = baseUnit.defence;
+        Ammunition = baseUnit.ammunition;
+        Speed = baseUnit.speed;
+        Initiative = baseUnit.initiative;
+        MinDamage = baseUnit.minDamage;
+        MaxDamage = baseUnit.maxDamage;
+        Health = baseUnit.health;
+        CurrentHealth = baseUnit.health;
+    }
 
     void Start()
     {
-        unitName = baseUnit.unitName;
-        attack = baseUnit.attack;
-        defence = baseUnit.defence;
-        ammunition = baseUnit.ammunition;
-        minDamage = baseUnit.minDamage;
-        maxDamage = baseUnit.maxDamage;
-        health = baseUnit.health;
-        currentHealth = baseUnit.currentHealth;
-        speed = baseUnit.speed;
-        initiative = baseUnit.initiative;
+        var go = Instantiate(numPanelPrefab, transform.position, Quaternion.identity, transform);
+        go.GetComponentInChildren<TextMesh>().text = NumberOfUnits.ToString();
 
+        numOfUnits.text = NumberOfUnits.ToString();
         view = GameObject.Find("UnitStatsView");
         startPosition = transform.position;
     }
@@ -81,6 +104,7 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
         if (target.x < transform.position.x && right)
         {
+            //кроме юнита флипается и табличка
             Flip();
         }
 
@@ -91,8 +115,8 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
     }
 
     public void GetMovableRange(Hex curHex, int s)
-    {      
-        if (s >= baseUnit.speed)
+    {
+        if (s >= Speed)
             return;
 
         foreach (var v in curHex.Neighbours)
@@ -126,12 +150,44 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
         }
     }
 
+    /*
+     * Атака и защита героя прибавляется к атаке и защите монстра. 
+     * расчёт повреждений рассчитывается так: 
+     * если уровень атаки атакующего монстра превышает уровень защиты защищающегося монстра, 
+     * то за каждый уровень превышения повреждения увеличиваются на 5%. Если же защита больше, то повреждения уменьшаются на 3%. 
+     * Например уровень атаки монстра с учётом всех бонусов - 20, а уровень защиты монстра противника - 15. 
+     * Повреждения увеличатся на (20 - 15)х5%= 25%, если же атака 20, а защита 25, то повреждения уменьшатся на (25 - 20) х 3% = 15%.
+     * 
+     * наносимые повреждения не могут составить свыше 400% или меньше 30% от значения, наносимого при равенстве атаки атакующего и защиты атакуемого.
+     * 
+     * высчитывается урон одного монстра другому в случае 1*1, затем умножается на кол-во нападающих монстров. 
+      */
     public void GetDamage(Unit attacker)
     {
-        System.Random rnd = new System.Random();
-        int dmg = rnd.Next(attacker.baseUnit.minDamage, attacker.baseUnit.maxDamage);
-        baseUnit.currentHealth -= dmg;
-        Debug.Log(baseUnit.unitName + " получает " + dmg + " урона");
+        int dmg = rnd.Next(attacker.MinDamage, attacker.MaxDamage);
+        dmg *= attacker.NumberOfUnits;
+        int statDiff = 0;
+
+        if (attacker.Attack > Defence)
+        {
+            statDiff = (attacker.Attack - Defence) * 5;
+        }
+        else if (attacker.Attack < Defence)
+        {
+            statDiff = (Defence - attacker.Attack) * 5;
+        }
+
+        int totalDmg = dmg * (1 + statDiff / 100);
+
+        CurrentHealth -= totalDmg;
+
+        Debug.Log(baseUnit.unitName + " получает " + totalDmg + " урона");
+        Debug.Log(baseUnit.unitName + " Текущее здоровье: " + CurrentHealth);
+
+        int deathRate = totalDmg / baseUnit.health;
+        NumberOfUnits -= deathRate;
+
+        Debug.Log("Количество юнитов: " + NumberOfUnits);
     }
 
     public void Spawn(Hex hex)
@@ -196,7 +252,6 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
                         Flip();
                     }
 
-                    //EventManager.Instance.TriggerEvent("Next");
                     EventController.Instance.TriggerEvent("Next", new BaseEvent());
 
                     yield break;
@@ -253,7 +308,6 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
     void OnMouseDown()
     {
-        //EventManager.Instance.TriggerEvent("Attack", this);
         EventController.Instance.TriggerEvent("Attack", new OnClickEvent<Unit>(this));
     }
 }

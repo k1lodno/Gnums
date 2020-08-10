@@ -8,7 +8,7 @@ using UnityEngine.Events;
 public class Grid : MonoBehaviour
 {
     [SerializeField]
-    Hex hexPrefab;
+    Hex hexPrefab = null;
 
     private int rows = 13; //количество рядов
     private int cols = 17; //количество столбцов
@@ -25,11 +25,6 @@ public class Grid : MonoBehaviour
     {
         GenerateGrid();
         FindNeighbours();
-    }
-
-    // Use this for initialization
-    void Start()
-    {
     }
     
     //расчёт позиции гекса

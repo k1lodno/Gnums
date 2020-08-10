@@ -21,14 +21,14 @@ public class UnitStatsView : MonoBehaviour
     {
         unitStatsPanel.gameObject.SetActive(true);
 
-        unitName.text = clickedUnit.unitName;
-        attack.text = "Attack " + clickedUnit.attack.ToString();
-        defence.text = "Defence " + clickedUnit.defence.ToString();
-        damage.text = "Damage " + clickedUnit.minDamage.ToString() + "-" + clickedUnit.maxDamage.ToString();
-        ammunition.text = "Ammunition " + clickedUnit.ammunition.ToString();
-        health.text = "Health " + clickedUnit.health.ToString();
-        curHealth.text = "Cur. Health " + clickedUnit.currentHealth.ToString();
-        speed.text = "Speed " + clickedUnit.speed.ToString();
-        initiative.text = "Initiative " + clickedUnit.initiative.ToString();
+        unitName.text = clickedUnit.baseUnit.unitName;
+        attack.text = "Attack " + clickedUnit.Attack.ToString();
+        defence.text = "Defence " + clickedUnit.Defence.ToString();
+        damage.text = "Damage " + clickedUnit.MinDamage.ToString() + "-" + clickedUnit.MaxDamage.ToString();
+        ammunition.text = "Ammunition " + clickedUnit.Ammunition.ToString();
+        health.text = "Health " + clickedUnit.Health.ToString();
+        curHealth.text = "Cur. Health " + clickedUnit.CurrentHealth.ToString();
+        speed.text = "Speed " + clickedUnit.Speed.ToString();
+        initiative.text = "Initiative " + clickedUnit.Initiative.ToString();
     }
 }

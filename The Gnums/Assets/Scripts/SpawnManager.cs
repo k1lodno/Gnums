@@ -6,10 +6,18 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     [SerializeField]
-    Grid grid;
+    Grid grid = null;
 
     [SerializeField]
-    Transform unitSpawnPlace;
+    Transform unitSpawnPlace = null;
+
+    [SerializeField]
+    Transform warlordSpawnPlace = null;
+
+    [SerializeField]
+    QueueManager queue = null;
+
+    public Warlord warlordPrefab;
 
     public Unit[] unitPrefab; //массив юнитов игрока
     private List<Unit> unitPrefabClone;
@@ -17,15 +25,22 @@ public class SpawnManager : MonoBehaviour
     public Unit[] enemyList; //массив юнитов ии
     private List<Unit> enemyListClone;
 
-    public List<Unit> UnitPrefabClone { get => unitPrefabClone; set => unitPrefabClone = value; }
-    public List<Unit> EnemyListClone { get => enemyListClone; set => enemyListClone = value; }
+    //public List<Unit> UnitPrefabClone { get => unitPrefabClone; set => unitPrefabClone = value; }
+    //public List<Unit> EnemyListClone { get => enemyListClone; set => enemyListClone = value; }
+    
+    System.Random rnd = new System.Random();
 
     void Start()
     {
-        UnitPrefabClone = new List<Unit>();
-        EnemyListClone = new List<Unit>();
+        SpawnWarlord();
         SelectSpawnPlaces();
     }
+
+    public void SpawnWarlord()
+    {
+        var warlord = Instantiate(warlordPrefab, warlordSpawnPlace);
+    }
+
 
     public void SelectSpawnPlaces()
     {
@@ -43,10 +58,12 @@ public class SpawnManager : MonoBehaviour
                         if (unitPrefab[k] != null)
                         {
                             var unit = Instantiate(unitPrefab[k], unitSpawnPlace);
-                            UnitPrefabClone.Add(unit);
+                            queue.QueueList.Add(unit);
 
                             var hex = grid.GetHex(i, j);
 
+                            //пока так рандомим количество юнитов в стеке
+                            unit.NumberOfUnits = rnd.Next(1, 10);
                             unit.Spawn(hex);
 
                             grid.Graph[i, j].isWalkable = false;
@@ -64,10 +81,12 @@ public class SpawnManager : MonoBehaviour
                         if (enemyList[l] != null)
                         {
                             var enemy = Instantiate(enemyList[l], unitSpawnPlace);
-                            EnemyListClone.Add(enemy);
+                            enemy.IsEnemy = true;
+                            queue.QueueList.Add(enemy);
 
                             var hex = grid.GetHex(i, j);
 
+                            enemy.NumberOfUnits = rnd.Next(1, 10);
                             enemy.Spawn(hex);
 
                             grid.Graph[i, j].isWalkable = false;
@@ -82,9 +101,10 @@ public class SpawnManager : MonoBehaviour
         }
 
         //не учитывается то что если у юнитов одинаковая инициатива то должен ходить верхний
-        UnitPrefabClone.Sort(delegate (Unit x, Unit y)
+
+        queue.QueueList.Sort(delegate (Unit x, Unit y)
         {
-            return y.baseUnit.initiative.CompareTo(x.baseUnit.initiative);
+            return y.Initiative.CompareTo(x.Initiative);
         });
     }
 }
