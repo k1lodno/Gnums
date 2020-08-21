@@ -7,7 +7,17 @@ using static EventController;
 
 public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPointerEnterHandler
 {
-    public BaseUnit baseUnit;
+    [SerializeField]
+    BaseUnit baseUnit;
+
+    [SerializeField]
+    private Animator anim = null;
+
+    [SerializeField]
+    GameObject numPanelPrefab = null;
+
+    [SerializeField]
+    Sprite unitAvatar = null;
 
     //количество юнитов в стеке
     private int numberOfUnits;
@@ -43,15 +53,6 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
     System.Random rnd = new System.Random();
 
-    [SerializeField]
-    private Animator anim = null;
-
-    [SerializeField]
-    TextMesh numOfUnits = null;
-
-    [SerializeField]
-    GameObject numPanelPrefab = null;
-
     private bool isMoving = false;
     private bool right = true;
     bool isEnemy = false;
@@ -75,18 +76,20 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
     public int Initiative { get => initiative; set => initiative = value; }
     public int NumberOfUnits { get => numberOfUnits; set => numberOfUnits = value; }
     public bool IsEnemy { get => isEnemy; set => isEnemy = value; }
+    public Sprite UnitAvatar { get => unitAvatar; set => unitAvatar = value; }
+    public BaseUnit BaseUnit { get => baseUnit; set => baseUnit = value; }
 
     void Awake()
     {
-        Attack = baseUnit.attack;
-        Defence = baseUnit.defence;
-        Ammunition = baseUnit.ammunition;
-        Speed = baseUnit.speed;
-        Initiative = baseUnit.initiative;
-        MinDamage = baseUnit.minDamage;
-        MaxDamage = baseUnit.maxDamage;
-        Health = baseUnit.health;
-        CurrentHealth = baseUnit.health;
+        Attack = BaseUnit.attack;
+        Defence = BaseUnit.defence;
+        Ammunition = BaseUnit.ammunition;
+        Speed = BaseUnit.speed;
+        Initiative = BaseUnit.initiative;
+        MinDamage = BaseUnit.minDamage;
+        MaxDamage = BaseUnit.maxDamage;
+        Health = BaseUnit.health;
+        CurrentHealth = BaseUnit.health;
     }
 
     void Start()
@@ -94,7 +97,6 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
         var go = Instantiate(numPanelPrefab, transform.position, Quaternion.identity, transform);
         go.GetComponentInChildren<TextMesh>().text = NumberOfUnits.ToString();
 
-        numOfUnits.text = NumberOfUnits.ToString();
         view = GameObject.Find("UnitStatsView");
         startPosition = transform.position;
     }
@@ -129,7 +131,7 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
     public void GetAttackRange(Hex curHex, int i)
     {
-        if (baseUnit.unitType == BaseUnit.TypeOfUnit.MELEE)
+        if (BaseUnit.unitType == BaseUnit.TypeOfUnit.MELEE)
         {
             foreach (var v in curHex.Neighbours)
             {
@@ -179,15 +181,28 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
         int totalDmg = dmg * (1 + statDiff / 100);
 
+        //некоректно вычитается хп если наносит дамаги больше хп одного юнита
         CurrentHealth -= totalDmg;
 
-        Debug.Log(baseUnit.unitName + " получает " + totalDmg + " урона");
-        Debug.Log(baseUnit.unitName + " Текущее здоровье: " + CurrentHealth);
+        Debug.Log(BaseUnit.unitName + " получает " + totalDmg + " урона");
+        Debug.Log(BaseUnit.unitName + " Текущее здоровье: " + CurrentHealth);
 
-        int deathRate = totalDmg / baseUnit.health;
+        int deathRate = totalDmg / BaseUnit.health;
         NumberOfUnits -= deathRate;
 
+        if(NumberOfUnits < 0)
+        {
+            NumberOfUnits = 0;
+        }
+
+        if(NumberOfUnits == 0)
+        {
+            Debug.Log("triggered");
+            EventController.Instance.TriggerEvent("Death", new OnClickEvent<Unit>(this));
+        }
+
         Debug.Log("Количество юнитов: " + NumberOfUnits);
+        EventController.Instance.TriggerEvent("Next", new BaseEvent());
     }
 
     public void Spawn(Hex hex)

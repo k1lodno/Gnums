@@ -21,7 +21,7 @@ public class UnitStatsView : MonoBehaviour
     {
         unitStatsPanel.gameObject.SetActive(true);
 
-        unitName.text = clickedUnit.baseUnit.unitName;
+        unitName.text = clickedUnit.BaseUnit.unitName;
         attack.text = "Attack " + clickedUnit.Attack.ToString();
         defence.text = "Defence " + clickedUnit.Defence.ToString();
         damage.text = "Damage " + clickedUnit.MinDamage.ToString() + "-" + clickedUnit.MaxDamage.ToString();

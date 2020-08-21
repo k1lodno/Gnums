@@ -32,8 +32,15 @@ public class UnitManipulator : MonoBehaviour
     {
         var enemyUnit = param.OnClickObject;
 
+        if (enemyUnit.IsEnemy && qUnit.SelectedUnit.IsEnemy)
+        {
+            Debug.Log("сам себя бить пытается");
+            return;
+        }
+
         if (enemyUnit.IsEnemy && qUnit.SelectedUnit.AttackableHexes.Contains(enemyUnit.CurrentHex))
         {
+            Debug.Log("здесь");
             enemyUnit.GetDamage(qUnit.SelectedUnit);
         }
     }
