@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,12 +51,12 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
     static Vector3 currentPosition;
     Vector3 startPosition;
     private Vector3 target;
-
-    System.Random rnd = new System.Random();
+    readonly System.Random rnd = new System.Random();
 
     private bool isMoving = false;
     private bool right = true;
     bool isEnemy = false;
+    GameObject go;
 
     private Hex currentHex;
     private List<Hex> reachableHexes = new List<Hex>();
@@ -94,7 +95,7 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
 
     void Start()
     {
-        var go = Instantiate(numPanelPrefab, transform.position, Quaternion.identity, transform);
+        go = Instantiate(numPanelPrefab, transform.position, Quaternion.identity, transform);
         go.GetComponentInChildren<TextMesh>().text = NumberOfUnits.ToString();
 
         view = GameObject.Find("UnitStatsView");
@@ -166,10 +167,13 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
       */
     public void GetDamage(Unit attacker)
     {
+        //вычисляем урон
         int dmg = rnd.Next(attacker.MinDamage, attacker.MaxDamage);
         dmg *= attacker.NumberOfUnits;
+
         int statDiff = 0;
 
+        //учитываем параметры защиты и атаки
         if (attacker.Attack > Defence)
         {
             statDiff = (attacker.Attack - Defence) * 5;
@@ -179,29 +183,35 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
             statDiff = (Defence - attacker.Attack) * 5;
         }
 
+        //итоговый урон
         int totalDmg = dmg * (1 + statDiff / 100);
 
-        //некоректно вычитается хп если наносит дамаги больше хп одного юнита
-        CurrentHealth -= totalDmg;
+        //суммарное количество хп в стеке
+        int fullHp = 0;
+
+        if (NumberOfUnits > 0)
+        {
+            fullHp = Health * (NumberOfUnits - 1) + CurrentHealth;
+            fullHp -= totalDmg;
+        }        
+
+        Debug.Log(fullHp);
+
+        if (fullHp < 0)
+        {
+            NumberOfUnits = 0;
+            EventController.Instance.TriggerEvent("Death", new OnClickEvent<Unit>(this));
+        }
+
+        CurrentHealth = fullHp % Health;
 
         Debug.Log(BaseUnit.unitName + " получает " + totalDmg + " урона");
         Debug.Log(BaseUnit.unitName + " Текущее здоровье: " + CurrentHealth);
 
-        int deathRate = totalDmg / BaseUnit.health;
-        NumberOfUnits -= deathRate;
+        //double survived = (double) fullHp / Health;  
+        NumberOfUnits = (int) Math.Ceiling((double)fullHp / Health);
 
-        if(NumberOfUnits < 0)
-        {
-            NumberOfUnits = 0;
-        }
-
-        if(NumberOfUnits == 0)
-        {
-            Debug.Log("triggered");
-            EventController.Instance.TriggerEvent("Death", new OnClickEvent<Unit>(this));
-        }
-
-        Debug.Log("Количество юнитов: " + NumberOfUnits);
+        go.GetComponentInChildren<TextMesh>().text = NumberOfUnits.ToString();
         EventController.Instance.TriggerEvent("Next", new BaseEvent());
     }
 

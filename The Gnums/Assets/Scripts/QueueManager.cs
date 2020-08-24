@@ -1,20 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static EventController;
 
 public class QueueManager : MonoBehaviour
 {
+    [SerializeField]
+    GameObject queueMemberPrefab = null;
 
     [SerializeField]
-    Image queueMember = null;
+    GameObject turnPrefab = null;
 
     [SerializeField]
     ScrollQueue scroll = null;
 
     private Unit selectedUnit; //активный юнит
     List<Unit> queueList; //лист всех юнитов 
+
+    Dictionary<Unit, GameObject> oneTurnDict = new Dictionary<Unit, GameObject>();
+    List<GameObject> oneTurnList = new List<GameObject>();
 
     int numberOfTurns = 10;
     int index = 0; //индекс юнита в массиве юнитов
@@ -38,21 +44,43 @@ public class QueueManager : MonoBehaviour
 
     public void InitQueue()
     {
-        Image imgGO;
+        GameObject queueGO;
+        /*
+        GameObject val;
+
+        for (int j = 0; j < QueueList.Count; j++)
+        {
+            oneTurnDict.Add(QueueList[j], queueMemberPrefab);
+        }
 
         for (int i = 0; i < numberOfTurns; i++)
         {
             for (int j = 0; j < QueueList.Count; j++)
             {
-                imgGO = Instantiate(queueMember, GetComponent<ScrollRect>().content);
 
-                imgGO.gameObject.GetComponent<Image>().sprite = QueueList[j].UnitAvatar;
-                imgGO.gameObject.SetActive(true);
+                oneTurnDict.TryGetValue(QueueList[j], out val);
+                val.gameObject.GetComponent<Image>().sprite = QueueList[j].UnitAvatar;
+
+                Instantiate(val, GetComponent<ScrollRect>().content);
+
             }
 
-            imgGO = Instantiate(queueMember, GetComponent<ScrollRect>().content);
-            imgGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
-            imgGO.gameObject.SetActive(true);
+            queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
+            queueGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
+        }*/
+
+        
+        for (int i = 0; i < numberOfTurns; i++)
+        {
+            for (int j = 0; j < QueueList.Count; j++)
+            {
+                oneTurnList.Add(queueMemberPrefab);
+                oneTurnList[j].gameObject.GetComponent<Image>().sprite = QueueList[j].UnitAvatar;
+                Instantiate(oneTurnList[j], GetComponent<ScrollRect>().content);
+            }
+
+            queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
+            queueGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
         }
     }
 
@@ -62,6 +90,12 @@ public class QueueManager : MonoBehaviour
 
         if (QueueList.Contains(deadUnit))
         {
+            /*
+            GameObject go;
+            oneTurnDict.TryGetValue(deadUnit, out go);
+            Destroy(go);
+            oneTurnDict.Remove(deadUnit);*/
+
             QueueList.Remove(deadUnit);
             InitQueue();
         }

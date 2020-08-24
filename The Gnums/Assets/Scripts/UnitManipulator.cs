@@ -40,7 +40,6 @@ public class UnitManipulator : MonoBehaviour
 
         if (enemyUnit.IsEnemy && qUnit.SelectedUnit.AttackableHexes.Contains(enemyUnit.CurrentHex))
         {
-            Debug.Log("здесь");
             enemyUnit.GetDamage(qUnit.SelectedUnit);
         }
     }
