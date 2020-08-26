@@ -14,16 +14,20 @@ public class QueueManager : MonoBehaviour
     GameObject turnPrefab = null;
 
     [SerializeField]
-    ScrollQueue scroll = null;
+    UiHandler scroll = null;
 
     private Unit selectedUnit; //активный юнит
     List<Unit> queueList; //лист всех юнитов 
 
-    Dictionary<Unit, GameObject> oneTurnDict = new Dictionary<Unit, GameObject>();
+    //Dictionary<Unit, GameObject> oneTurnDict = new Dictionary<Unit, GameObject>();
     List<GameObject> oneTurnList = new List<GameObject>();
+    GameObject queueGO;
 
-    int numberOfTurns = 10;
     int index = 0; //индекс юнита в массиве юнитов
+    //беспонтовые счётчики
+    int k = 0;
+    int l;
+    int numberOfTurnsInScroll;
 
     public Unit SelectedUnit { get => selectedUnit; set => selectedUnit = value; }
     public List<Unit> QueueList { get => queueList; set => queueList = value; }
@@ -41,36 +45,43 @@ public class QueueManager : MonoBehaviour
         InitQueue();
     }
 
+    /*
+GameObject val;
+
+for (int j = 0; j < QueueList.Count; j++)
+{
+    oneTurnDict.Add(QueueList[j], queueMemberPrefab);
+}
+
+for (int i = 0; i < numberOfTurns; i++)
+{
+    for (int j = 0; j < QueueList.Count; j++)
+    {
+
+        oneTurnDict.TryGetValue(QueueList[j], out val);
+        val.gameObject.GetComponent<Image>().sprite = QueueList[j].UnitAvatar;
+
+        Instantiate(val, GetComponent<ScrollRect>().content);
+
+    }
+
+    queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
+    queueGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
+}*/
 
     public void InitQueue()
-    {
-        GameObject queueGO;
-        /*
-        GameObject val;
+    {       
+        int scrollCapacity = (int) (GetComponent<RectTransform>().rect.width / queueMemberPrefab.GetComponent<RectTransform>().rect.width);
+        int turnLength = QueueList.Count + 1;
 
-        for (int j = 0; j < QueueList.Count; j++)
+        numberOfTurnsInScroll = scrollCapacity / turnLength;
+        
+        if(scrollCapacity % turnLength != 0)
         {
-            oneTurnDict.Add(QueueList[j], queueMemberPrefab);
+            numberOfTurnsInScroll += 1;
         }
 
-        for (int i = 0; i < numberOfTurns; i++)
-        {
-            for (int j = 0; j < QueueList.Count; j++)
-            {
-
-                oneTurnDict.TryGetValue(QueueList[j], out val);
-                val.gameObject.GetComponent<Image>().sprite = QueueList[j].UnitAvatar;
-
-                Instantiate(val, GetComponent<ScrollRect>().content);
-
-            }
-
-            queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
-            queueGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
-        }*/
-
-        
-        for (int i = 0; i < numberOfTurns; i++)
+        for (int i = 1; i <= numberOfTurnsInScroll; i++)
         {
             for (int j = 0; j < QueueList.Count; j++)
             {
@@ -80,25 +91,49 @@ public class QueueManager : MonoBehaviour
             }
 
             queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
-            queueGO.GetComponentInChildren<Text>().text = (i + 1).ToString();
+            queueGO.GetComponentInChildren<Text>().text = (i).ToString();
         }
     }
+
+    /*
+           GameObject go;
+           oneTurnDict.TryGetValue(deadUnit, out go);
+           Destroy(go);
+           oneTurnDict.Remove(deadUnit);*/
 
     public void UpdateQueue(OnClickEvent<Unit> p)
     {
         var deadUnit = p.OnClickObject;
 
         if (QueueList.Contains(deadUnit))
-        {
-            /*
-            GameObject go;
-            oneTurnDict.TryGetValue(deadUnit, out go);
-            Destroy(go);
-            oneTurnDict.Remove(deadUnit);*/
-
+        {            
             QueueList.Remove(deadUnit);
+            oneTurnList.Clear();
+
+            foreach(Transform child in GetComponent<ScrollRect>().content)
+            {
+                Destroy(child.gameObject);
+            }
+
             InitQueue();
         }
+    }
+
+    public void AddToQueue()
+    {
+        Debug.Log("here");
+
+        if (k >= QueueList.Count)
+        {
+            queueGO = Instantiate(turnPrefab, GetComponent<ScrollRect>().content);
+            queueGO.GetComponentInChildren<Text>().text = (l).ToString();
+            l++;
+            k = 0;
+        }
+
+        Instantiate(oneTurnList[k], GetComponent<ScrollRect>().content);
+        k++;
+        l = numberOfTurnsInScroll;
     }
 
     public void Queue(BaseEvent baseEvent)
@@ -130,7 +165,7 @@ public class QueueManager : MonoBehaviour
             SelectedUnit.GetAttackRange(SelectedUnit.CurrentHex, 0);
         }
 
-        scroll.OnClick();
+        scroll.OnNextClick();
     }
 
 

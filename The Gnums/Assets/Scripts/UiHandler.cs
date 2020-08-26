@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static EventController;
 
-public class ScrollQueue : MonoBehaviour
+public class UiHandler : MonoBehaviour
 {
     [SerializeField]
     ScrollRect scroll = null;
@@ -12,10 +12,13 @@ public class ScrollQueue : MonoBehaviour
     [SerializeField]
     Image img = null;
 
-    public void OnClick()
+
+    public void OnNextClick()
     {
         var a = scroll.content.sizeDelta.x / img.rectTransform.rect.width;
         scroll.horizontalNormalizedPosition += 1 / a;
+
+        scroll.GetComponent<QueueManager>().AddToQueue();
     }
 
     public void OnWaitClick()

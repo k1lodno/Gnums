@@ -117,6 +117,7 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
         }
     }
 
+    //определяем область передвижения юнита
     public void GetMovableRange(Hex curHex, int s)
     {
         if (s >= Speed)
@@ -130,6 +131,7 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
         }
     }
 
+    //определяем область атаки юнита
     public void GetAttackRange(Hex curHex, int i)
     {
         if (BaseUnit.unitType == BaseUnit.TypeOfUnit.MELEE)
@@ -195,20 +197,17 @@ public class Unit : MonoBehaviour, IPointerDownHandler, IPointerUpHandler//, IPo
             fullHp -= totalDmg;
         }        
 
-        Debug.Log(fullHp);
-
         if (fullHp < 0)
         {
             NumberOfUnits = 0;
+            fullHp = 0;
             EventController.Instance.TriggerEvent("Death", new OnClickEvent<Unit>(this));
         }
 
         CurrentHealth = fullHp % Health;
 
-        Debug.Log(BaseUnit.unitName + " получает " + totalDmg + " урона");
-        Debug.Log(BaseUnit.unitName + " Текущее здоровье: " + CurrentHealth);
+        Debug.Log(attacker.BaseUnit.unitName + " наносит " + totalDmg + " урона");
 
-        //double survived = (double) fullHp / Health;  
         NumberOfUnits = (int) Math.Ceiling((double)fullHp / Health);
 
         go.GetComponentInChildren<TextMesh>().text = NumberOfUnits.ToString();
